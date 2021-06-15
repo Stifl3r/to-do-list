@@ -1,0 +1,26 @@
+info:
+  build:
+    name: todo_list_api
+    version: 1.0.0
+
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: yourUrl
+    driver-class-name: org.postgresql.Driver
+    username: yourUsername
+    password: yourPassword
+
+    jpa:
+      database-platform: org.hibernate.dialect.PostgreSQLDialect
+      show-sql: true
+      hibernate:
+        ddl-auto: none
+        naming:
+          physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+      properties:
+        hibernate:
+          default_schema: to_do_list
+
