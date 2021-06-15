@@ -11,11 +11,13 @@ public class EmployeeModel {
     private String firstname;
     private String lastname;
     private String department;
+    private String email;
 
     public EmployeeModel(Employee employee) {
         this.employeeId = employee.getEmployeeId();
         this.firstname =  employee.getFirstname();
         this.lastname = employee.getLastname();
         this.department = employee.getDepartment();
+        this.email = employee.getEmail();
     }
 }

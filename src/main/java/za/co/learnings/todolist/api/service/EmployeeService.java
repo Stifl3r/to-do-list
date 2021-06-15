@@ -11,6 +11,8 @@ import za.co.learnings.todolist.api.repository.EmployeeRepository;
 import za.co.learnings.todolist.api.repository.TaskRepository;
 import za.co.learnings.todolist.api.repository.entity.Employee;
 
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
@@ -54,7 +56,15 @@ public class EmployeeService {
         }
 
         if (request.getDepartment() == null || request.getDepartment().isBlank()) {
-            throw new InvalidFieldException("Name cannot be null or empty");
+            throw new InvalidFieldException("Department cannot be null or empty");
+        }
+
+        if (request.getEmail() == null || request.getEmail().isBlank()) {
+            throw new InvalidFieldException("Email cannot be null or empty");
+        }
+
+        if (!isValidEmailAddress(request.getEmail())) {
+            throw new InvalidFieldException("Email address format is incorrect");
         }
 
         var employee =  new Employee();
@@ -82,9 +92,14 @@ public class EmployeeService {
             throw new InvalidFieldException("Name cannot be null or empty");
         }
 
+        if (!isValidEmailAddress(request.getEmail())) {
+            throw new InvalidFieldException("Email address format is incorrect");
+        }
+
         employee.setFirstname(request.getFirstname());
         employee.setLastname(request.getLastname());
         employee.setDepartment(request.getDepartment());
+        employee.setEmail(request.getEmail());
 
         employeeRepository.save(employee);
         return new EmployeeModel(employee);
@@ -103,5 +118,18 @@ public class EmployeeService {
         return results.stream()
                 .map(TaskModel::new)
                 .collect(toList());
+    }
+
+    //TODO Enhance validator
+    // 1@com is considered to be a valid address
+    private static boolean isValidEmailAddress(String email) {
+        boolean result = true;
+        try {
+            InternetAddress emailAddr = new InternetAddress(email);
+            emailAddr.validate();
+        } catch (AddressException ex) {
+            result = false;
+        }
+        return result;
     }
 }

@@ -15,7 +15,8 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static za.co.learnings.todolist.api.controller.model.error.ApiErrorType.VALIDATION_ERROR;
 
 @ControllerAdvice(assignableTypes = {
-        TaskController.class
+        TaskController.class,
+        EmployeeController.class
 })
 public class GenericControllerAdvice {
 
