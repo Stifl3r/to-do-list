@@ -71,6 +71,7 @@ public class EmployeeService {
         employee.setFirstname(request.getFirstname());
         employee.setLastname(request.getLastname());
         employee.setDepartment(request.getDepartment());
+        employee.setEmail(request.getEmail());
 
         employeeRepository.save(employee);
         return new EmployeeModel(employee);
