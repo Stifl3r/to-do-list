@@ -15,6 +15,7 @@ public class TaskModel {
     private LocalDateTime issueDate;
     private LocalDateTime deadline;
     private String status;
+    private LocalDateTime statusUpdate;
     private EmployeeModel assignee;
     private EmployeeModel reporter;
 
@@ -25,6 +26,7 @@ public class TaskModel {
         this.issueDate = task.getCreateDate();
         this.deadline = task.getDeadline();
         this.status = task.getStatus();
+        this.statusUpdate = task.getStatusUpdate();
         this.assignee = task.getAssignee() == null ?
                 null :
                 new EmployeeModel(task.getAssignee());

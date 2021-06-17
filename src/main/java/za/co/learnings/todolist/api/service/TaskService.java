@@ -102,6 +102,7 @@ public class TaskService {
         task.setDescription(request.getDescription());
         task.setDeadline(request.getDeadline());
         task.setStatus(request.getStatus().getValue());
+        task.setStatusUpdate(LocalDateTime.now());
         task.setAssignee(assignee);
 
         taskRepository.save(task);

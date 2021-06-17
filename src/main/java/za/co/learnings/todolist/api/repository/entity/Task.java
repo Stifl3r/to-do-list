@@ -21,6 +21,8 @@ public class Task {
     private LocalDateTime createDate;
     private LocalDateTime deadline;
     private String status;
+    @Column(name = "statusupdate")
+    private LocalDateTime statusUpdate;
 
     @ManyToOne
     @JoinColumn(name = "assignee", insertable = true, updatable = false)

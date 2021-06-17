@@ -17,6 +17,7 @@ create table to_do_list.task (
      createDate timestamp,
      deadline timestamp,
      status varchar (30),
+     statusUpdate timestamp,
      assignee bigint references to_do_list.employee,
      reporter bigint references to_do_list.employee
 );
