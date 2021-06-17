@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.config.EnableHypermediaSupport;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import za.co.learnings.todolist.api.controller.model.EmployeeModel;
@@ -16,6 +18,7 @@ import za.co.learnings.todolist.api.service.EmployeeService;
 
 import java.util.List;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.http.HttpStatus.CREATED;
 
 @Tag(name = "Employees")
@@ -25,6 +28,7 @@ import static org.springframework.http.HttpStatus.CREATED;
         @ApiResponse(responseCode = "200", description = "OK"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
 })
+@EnableHypermediaSupport(type = EnableHypermediaSupport.HypermediaType.HAL)
 public class EmployeeController {
 
     private final EmployeeService employeeService;
@@ -36,7 +40,14 @@ public class EmployeeController {
     @Operation(description = "Get a list of employees")
     @GetMapping()
     public List<EmployeeModel> getListOfEmployees() {
-        return employeeService.getAllEmployees();
+        var employees = employeeService.getAllEmployees();
+
+        for (EmployeeModel emp : employees) {
+            String empId = emp.getEmployeeId().toString();
+            Link selfLink = linkTo(EmployeeController.class).slash(empId).withSelfRel();
+            emp.add(selfLink);
+        }
+        return employees;
     }
 
     @Operation(description = "Get a employee by id")

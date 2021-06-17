@@ -2,11 +2,12 @@ package za.co.learnings.todolist.api.controller.model;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.hateoas.RepresentationModel;
 import za.co.learnings.todolist.api.repository.entity.Employee;
 
 @Getter
 @Setter
-public class EmployeeModel {
+public class EmployeeModel extends RepresentationModel<EmployeeModel> {
     private Integer employeeId;
     private String firstname;
     private String lastname;
