@@ -29,8 +29,10 @@ public class TaskService {
         this.employeeRepository = employeeRepository;
     }
 
-    public List<TaskModel> getAllTasks() {
-        var results = taskRepository.findAll();
+    public List<TaskModel> getAllTasks(Boolean overdue) {
+        var results = overdue != null && overdue ?
+                taskRepository.findTasksByFilter()
+                : taskRepository.findAllByOrderByTaskIdAsc();
         return results.stream()
                 .map(TaskModel::new)
                 .collect(toList());

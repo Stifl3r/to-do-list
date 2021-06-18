@@ -34,8 +34,8 @@ public class TaskController {
 
     @Operation(description = "Get a list of tasks")
     @GetMapping()
-    public List<TaskModel> getListOfTasks() {
-        return taskService.getAllTasks();
+    public List<TaskModel> getListOfTasks(@RequestParam(required = false) Boolean overdue ) {
+        return taskService.getAllTasks(overdue);
     }
 
     @Operation(description = "Get a task by id")
