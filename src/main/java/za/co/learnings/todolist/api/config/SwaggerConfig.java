@@ -18,7 +18,7 @@ public class SwaggerConfig {
                 .tags(null)
                 .info(new Info()
                         .title("TODO List Api")
-                        .description("Spin spring boot application")
+                        .description("Spring boot application")
                         .version("1.0")
                         .contact(contact));
         return api;
