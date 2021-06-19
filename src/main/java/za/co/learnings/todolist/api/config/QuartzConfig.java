@@ -5,10 +5,7 @@ import org.quartz.SchedulerException;
 import org.quartz.impl.matchers.GroupMatcher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import za.co.learnings.todolist.api.job.JobConfiguration;
-import za.co.learnings.todolist.api.job.JobListener;
-import za.co.learnings.todolist.api.job.QuartzPersistence;
-import za.co.learnings.todolist.api.job.TestJob;
+import za.co.learnings.todolist.api.job.*;
 
 @Component
 public class QuartzConfig {
@@ -33,6 +30,13 @@ public class QuartzConfig {
         var existingTestJob = scheduler.getJobKeys(GroupMatcher.jobGroupEquals(testJobDetail.getKey().getGroup()));
         if (existingTestJob.size() == 0) {
             scheduler.addJob(testJobDetail, true, true);
+        }
+
+        //OverdueTasksJob
+        var overdueTasksJob = jobConfiguration.buildJobDetail(OverdueTasksJob.class, "OverdueTasksJob", "OverdueTasksJob that invokes batch job to check over due tasks and send notifications");
+        var existingOverdueTasksJob = scheduler.getJobKeys(GroupMatcher.jobGroupEquals(overdueTasksJob.getKey().getGroup()));
+        if (existingOverdueTasksJob.size() == 0) {
+            scheduler.addJob(overdueTasksJob, true, true);
         }
 
         scheduler.getListenerManager().addJobListener( new JobListener(quartzPersistence));
