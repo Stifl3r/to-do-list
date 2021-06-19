@@ -24,3 +24,22 @@ spring:
       hibernate:
         default_schema: to_do_list
 
+  quartz:
+    job-store-type: jdbc
+    jdbc:
+      initialize-schema: never
+####  Initialize on first run only
+#      initialize-schema: always
+    properties:
+      org:
+        quartz:
+          scheduler:
+            instanceName: quartzScheduler
+            instanceId: AUTO
+            wrapJobExecutionInUserTransaction: false
+          jobStore:
+            class: org.quartz.impl.jdbcjobstore.JobStoreTX
+            txIsolationLevelReadCommitted: true
+            driverDelegateClass: org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
+          threadPool:
+            threadCount: 5

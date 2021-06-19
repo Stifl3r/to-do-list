@@ -16,7 +16,9 @@ import static za.co.learnings.todolist.api.controller.model.error.ApiErrorType.V
 
 @ControllerAdvice(assignableTypes = {
         TaskController.class,
-        EmployeeController.class
+        EmployeeController.class,
+        QuartzTriggerController.class,
+        QuartzSchedulerController.class
 })
 public class GenericControllerAdvice {
 
