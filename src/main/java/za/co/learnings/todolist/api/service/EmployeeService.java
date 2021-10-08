@@ -124,9 +124,9 @@ public class EmployeeService {
     //TODO Enhance validator
     // 1@com is considered to be a valid address
     private static boolean isValidEmailAddress(String email) {
-        boolean result = true;
+        var result = true;
         try {
-            InternetAddress emailAddr = new InternetAddress(email);
+            var emailAddr = new InternetAddress(email);
             emailAddr.validate();
         } catch (AddressException ex) {
             result = false;
