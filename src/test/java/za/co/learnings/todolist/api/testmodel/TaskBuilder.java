@@ -1,5 +1,6 @@
 package za.co.learnings.todolist.api.testmodel;
 
+import za.co.learnings.todolist.api.repository.entity.Employee;
 import za.co.learnings.todolist.api.repository.entity.Task;
 
 import java.time.LocalDateTime;
@@ -15,6 +16,8 @@ public class TaskBuilder implements Builder<Task> {
     private LocalDateTime deadline = now().plusDays(3);
     private String status = "Testing";
     private LocalDateTime statusUpdate = now();
+    private Employee assignee =  EmployeeBuilder.anEmployee().build();
+    private Employee reporter =  EmployeeBuilder.anEmployee().build();
 
     @Override
     public Task build() {
@@ -26,6 +29,8 @@ public class TaskBuilder implements Builder<Task> {
         task.setDeadline(deadline);
         task.setStatus(status);
         task.setStatusUpdate(statusUpdate);
+        task.setAssignee(assignee);
+        task.setReporter(reporter);
         return task;
     }
 
@@ -65,6 +70,16 @@ public class TaskBuilder implements Builder<Task> {
 
     public TaskBuilder withStatusUpdate(LocalDateTime statusUpdate) {
         this.statusUpdate = statusUpdate;
+        return this;
+    }
+
+    public TaskBuilder withReporter(Employee reporter) {
+        this.reporter = reporter;
+        return this;
+    }
+
+    public TaskBuilder withAssignee(Employee assignee) {
+        this.assignee = assignee;
         return this;
     }
 }
