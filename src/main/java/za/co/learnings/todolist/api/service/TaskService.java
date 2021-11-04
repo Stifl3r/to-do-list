@@ -6,14 +6,19 @@ import za.co.learnings.todolist.api.controller.model.request.TaskCreateRequest;
 import za.co.learnings.todolist.api.controller.model.request.TaskEditRequest;
 import za.co.learnings.todolist.api.exception.InvalidFieldException;
 import za.co.learnings.todolist.api.exception.NotFoundException;
+import za.co.learnings.todolist.api.jsreport.JsReportBaseData;
+import za.co.learnings.todolist.api.jsreport.JsReportClient;
 import za.co.learnings.todolist.api.repository.EmployeeRepository;
 import za.co.learnings.todolist.api.repository.TaskRepository;
 import za.co.learnings.todolist.api.repository.entity.Employee;
 import za.co.learnings.todolist.api.repository.entity.Task;
 
-import java.time.LocalDateTime;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 import java.util.List;
 
+import static java.time.LocalDateTime.now;
 import static java.util.stream.Collectors.toList;
 import static za.co.learnings.todolist.api.controller.model.StatusType.BACK_LOG;
 
@@ -22,16 +27,19 @@ public class TaskService {
 
     private final TaskRepository taskRepository;
     private final EmployeeRepository employeeRepository;
+    private final JsReportClient jsReportClient;
 
     public TaskService(TaskRepository taskRepository,
+                       JsReportClient jsReportClient,
                        EmployeeRepository employeeRepository) {
         this.taskRepository = taskRepository;
+        this.jsReportClient = jsReportClient;
         this.employeeRepository = employeeRepository;
     }
 
     public List<TaskModel> getAllTasks(Boolean overdue) {
         var results = overdue != null && overdue ?
-                taskRepository.findTasksByFilter()
+                taskRepository.findTasksByFilter(now())
                 : taskRepository.findAllByOrderByTaskIdAsc();
         return results.stream()
                 .map(TaskModel::new)
@@ -70,7 +78,7 @@ public class TaskService {
         var task = new Task();
         task.setName(request.getName());
         task.setDescription(request.getDescription());
-        task.setCreateDate(LocalDateTime.now());
+        task.setCreateDate(now());
         task.setDeadline(request.getDeadline());
         task.setStatus(BACK_LOG.getValue());
         task.setReporter(reporter);
@@ -104,10 +112,37 @@ public class TaskService {
         task.setDescription(request.getDescription());
         task.setDeadline(request.getDeadline());
         task.setStatus(request.getStatus().getValue());
-        task.setStatusUpdate(LocalDateTime.now());
+        task.setStatusUpdate(now());
         task.setAssignee(assignee);
 
         taskRepository.save(task);
         return new TaskModel(task);
+    }
+
+
+    public ByteArrayInputStream getTasksForReport() {
+        var tasks = getAllTasks(true);
+        var list = tasks.stream()
+                .map(taskModel -> {
+                    List<String> cols = new ArrayList<>();
+                    cols.add(taskModel.getName());
+                    cols.add(taskModel.getDescription());
+                    cols.add(taskModel.getStatus());
+                    cols.add(taskModel.getDeadline().toString());
+                    cols.add(taskModel.getAssignee() == null ?
+                            null : taskModel.getAssignee().getLastname() + " " + taskModel.getAssignee().getFirstname());
+
+                    return cols;
+                }).collect(toList());
+
+        list.add(List.of("NUMBEROFROWS:" + (list.size() + 2)));
+
+        var data = new JsReportBaseData();
+        data.setRows(list);
+        data.setDataHeadings(List.of("Name", "Description", "Status", "Due Date", "Assignee"));
+        var jsRequest = jsReportClient.createCSVRequest(data);
+        var result = jsReportClient.sendAndWriteToBuffer(jsRequest);
+        var bos = (ByteArrayOutputStream) result;
+        return new ByteArrayInputStream(bos.toByteArray());
     }
 }

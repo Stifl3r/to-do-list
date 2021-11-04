@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import za.co.learnings.todolist.api.controller.model.TaskModel;
@@ -15,6 +17,7 @@ import za.co.learnings.todolist.api.service.TaskService;
 
 import java.util.List;
 
+import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
 import static org.springframework.http.HttpStatus.CREATED;
 
 @Tag(name = "Tasks")
@@ -70,5 +73,19 @@ public class TaskController {
     @PatchMapping("/{id}")
     public TaskModel editTask(@PathVariable Integer id, @RequestBody TaskEditRequest request) throws NotFoundException, InvalidFieldException {
         return taskService.editTask(id, request);
+    }
+
+    @Operation(description = "Export a list of over due tasks to csv")
+    @GetMapping("/export/csv")
+    public ResponseEntity<InputStreamResource> getOverDueTasksCSV() {
+        var result = taskService.getTasksForReport();
+        var headers = new HttpHeaders();
+        headers.setContentDispositionFormData("attachment", "OverdueTasks.csv");
+        headers.setAccessControlExposeHeaders(List.of(CONTENT_DISPOSITION));
+
+        return ResponseEntity
+                .ok()
+                .headers(headers)
+                .body(new InputStreamResource(result));
     }
 }

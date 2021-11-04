@@ -43,3 +43,5 @@ spring:
             driverDelegateClass: org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
           threadPool:
             threadCount: 5
+
+jsReportHostUrl: https://playground.jsreport.net/api/report

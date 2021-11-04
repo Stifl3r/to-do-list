@@ -21,7 +21,7 @@ import static org.springframework.web.util.UriComponentsBuilder.fromHttpUrl;
 @Slf4j
 public class OverdueTasksJob extends QuartzJobBean {
 
-    private RestTemplate restTemplate;
+    private final RestTemplate restTemplate;
 
     public OverdueTasksJob(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
