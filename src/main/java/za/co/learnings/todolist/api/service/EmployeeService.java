@@ -85,12 +85,20 @@ public class EmployeeService {
         var employee = employeeRepository.findById(id)
                 .orElseThrow(()-> new NotFoundException("Provided id does not exist"));
 
+        if (request.getFirstname() == null || request.getFirstname().isBlank()) {
+            throw new InvalidFieldException("Firstname cannot be null or empty");
+        }
+
         if (request.getLastname() == null || request.getLastname().isBlank()) {
             throw new InvalidFieldException("Lastname cannot be null or empty");
         }
 
         if (request.getDepartment() == null || request.getDepartment().isBlank()) {
-            throw new InvalidFieldException("Name cannot be null or empty");
+            throw new InvalidFieldException("Department cannot be null or empty");
+        }
+
+        if (request.getEmail() == null || request.getEmail().isBlank()) {
+            throw new InvalidFieldException("Email cannot be null or empty");
         }
 
         if (!isValidEmailAddress(request.getEmail())) {

@@ -11,6 +11,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import za.co.learnings.todolist.api.controller.model.TaskModel;
 import za.co.learnings.todolist.api.exception.InvalidFieldException;
 import za.co.learnings.todolist.api.exception.NotFoundException;
+import za.co.learnings.todolist.api.jsreport.JsReportClient;
 import za.co.learnings.todolist.api.repository.EmployeeRepository;
 import za.co.learnings.todolist.api.repository.TaskRepository;
 import java.util.Optional;
@@ -38,6 +39,9 @@ public class TaskServiceTest {
 
     @MockBean
     private EmployeeRepository employeeRepository;
+
+    @MockBean
+    private JsReportClient jsReportClient;
 
     @Test
     public void getAllTasksShouldReturnListOfTasks() {
