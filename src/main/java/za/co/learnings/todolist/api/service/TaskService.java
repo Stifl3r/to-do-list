@@ -103,7 +103,7 @@ public class TaskService {
         Employee assignee;
         if (request.getAssigneeId() != null) {
             assignee = employeeRepository.findById(request.getAssigneeId())
-                    .orElseThrow(()-> new NotFoundException("Provided reporterId does not exist"));
+                    .orElseThrow(()-> new NotFoundException("Provided assigneeId does not exist"));
         } else {
             assignee = null;
         }

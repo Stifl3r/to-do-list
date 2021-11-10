@@ -14,7 +14,8 @@ public class TaskBuilder implements Builder<Task> {
     private String description = "Build rest api that will";
     private LocalDateTime createDate = now();
     private LocalDateTime deadline = now().plusDays(3);
-    private String status = "Testing";
+//    private String status = "Testing";
+    private String status = "TESTING";
     private LocalDateTime statusUpdate = now();
     private Employee assignee =  EmployeeBuilder.anEmployee().build();
     private Employee reporter =  EmployeeBuilder.anEmployee().build();
