@@ -1,6 +1,7 @@
 package za.co.learnings.todolist.api.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -12,9 +13,11 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import za.co.learnings.todolist.api.controller.model.EmployeeModel;
+import za.co.learnings.todolist.api.controller.model.TaskModel;
 import za.co.learnings.todolist.api.exception.InvalidFieldException;
 import za.co.learnings.todolist.api.exception.NotFoundException;
 import za.co.learnings.todolist.api.service.EmployeeService;
+import za.co.learnings.todolist.api.testmodel.TaskBuilder;
 
 import static java.util.List.of;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -109,4 +112,35 @@ public class EmployeeControllerTest {
         assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
         assertThat(response.getContentAsString()).isEmpty();
     }
+
+    @Test
+    public void getEmployeeTasksShouldReturnSuccess() throws Exception {
+        var expected = TaskBuilder.aTask().build();
+
+        given(employeeService.getEmployeeTasks(1))
+                .willReturn(of(new TaskModel(expected)));
+
+        this.mockMvc.perform(get("/api/employees/1/tasks"))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+//    @Test
+//    public void createEmployeeShouldReturnSuccess() throws Exception {
+//        var request = anEmployeeCreateRequest().build();
+//        var expected = anEmployee().build();
+//
+//        given(employeeService.createEmployee(request))
+//                .willReturn(new EmployeeModel(expected));
+//
+//        var response = this.mockMvc.perform(post("/api/employees", request).accept(MediaType.APPLICATION_JSON))
+//                .andDo(print())
+//                .andExpect(status().isCreated())
+//                .andReturn().getResponse();
+//
+//        // then
+//        assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+//        assertThat(response.getContentAsString()).isEmpty();
+//    }
+
 }

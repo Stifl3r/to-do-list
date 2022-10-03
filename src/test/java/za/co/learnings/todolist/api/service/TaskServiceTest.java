@@ -490,6 +490,45 @@ public class TaskServiceTest {
                 .isEqualTo(expected);
     }
 
-
+//    @Test
+//    public void getTasksForReportShouldReturnSuccess() {
+//        var task = aTask().build();
+//        var tasks = List.of(task);
+//
+//        var list = tasks.stream()
+//                .map(taskModel -> {
+//                    List<String> cols = new ArrayList<>();
+//                    cols.add(taskModel.getName());
+//                    cols.add(taskModel.getDescription());
+//                    cols.add(taskModel.getStatus());
+//                    cols.add(taskModel.getDeadline().toString());
+//                    cols.add(taskModel.getAssignee() == null ?
+//                            null : taskModel.getAssignee().getLastname() + " " + taskModel.getAssignee().getFirstname());
+//
+//                    return cols;
+//                }).collect(toList());
+//
+//        list.add(List.of("NUMBEROFROWS:" + (list.size() + 2)));
+//
+//        var data = new JsReportBaseData();
+//        data.setRows(list);
+//        data.setDataHeadings(List.of("Name", "Description", "Status", "Due Date", "Assignee"));
+//
+//        given(taskRepository.findTasksByFilter(now()))
+//                .willReturn(Collections.emptyList());
+//
+//        var csvRequest = new JsReportRequest<JsReportBaseData>();
+//        given(jsReportClient.createCSVRequest(data))
+//                .willReturn(csvRequest);
+//
+//        var outputStream = new ByteArrayOutputStream();
+//        outputStream.write(1);
+//        given(jsReportClient.sendAndWriteToBuffer(csvRequest))
+//                .willReturn(outputStream);
+//
+//
+//        //When
+//        var actual = taskService.getTasksForReport();
+//    }
 
 }
