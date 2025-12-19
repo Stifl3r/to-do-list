@@ -1,0 +1,49 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-c4h_local}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - "55432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  init-db:
+    image: postgres:15
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./src/main/resources/data.sql:/tmp/data.sql:ro
+    entrypoint: ["/bin/sh", "-c"]
+    command: >
+      echo "waiting for postgres on db:5432" &&
+      until pg_isready -h db -U "$${POSTGRES_USER}"; do sleep 1; done &&
+      echo "ensuring database $${POSTGRES_DB} exists" &&
+      PGPASSWORD="$${POSTGRES_PASSWORD}" psql -h db -U "$${POSTGRES_USER}" -tc
+      "SELECT 1 FROM pg_database WHERE datname='$${POSTGRES_DB}'" | grep -q 1 || \
+      PGPASSWORD="$${POSTGRES_PASSWORD}" psql -h db -U "$${POSTGRES_USER}"
+      -c "CREATE DATABASE $${POSTGRES_DB}" &&
+      echo "running data.sql into $${POSTGRES_DB}" &&
+      PGPASSWORD="$${POSTGRES_PASSWORD}" psql -a -e -v ON_ERROR_STOP=1
+      -h db -U "$${POSTGRES_USER}"
+      -d "$${POSTGRES_DB}"
+      -f /tmp/data.sql
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-c4h_local}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    restart: "no"
+
+volumes:
+  db-data:
