@@ -1,19 +1,17 @@
 package za.co.learnings.todolist.api.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Ignore;
+import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpStatus;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import za.co.learnings.todolist.api.controller.model.EmployeeModel;
 import za.co.learnings.todolist.api.controller.model.TaskModel;
+import za.co.learnings.todolist.api.controller.model.request.EmployeeCreateRequest;
 import za.co.learnings.todolist.api.exception.InvalidFieldException;
 import za.co.learnings.todolist.api.exception.NotFoundException;
 import za.co.learnings.todolist.api.service.EmployeeService;
@@ -21,10 +19,12 @@ import za.co.learnings.todolist.api.testmodel.TaskBuilder;
 
 import static java.util.List.of;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static za.co.learnings.todolist.api.testmodel.EmployeeBuilder.anEmployee;
 import static za.co.learnings.todolist.api.testmodel.EmployeeCreateRequestBuilder.anEmployeeCreateRequest;
@@ -40,7 +40,7 @@ public class EmployeeControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @MockitoBean
     private EmployeeService employeeService;
 
 
@@ -77,40 +77,32 @@ public class EmployeeControllerTest {
 
     @Test
     public void getEmployeeByIdWHenIdDoesNotExistShouldReturnNotFound() throws Exception {
-        this.mockMvc = MockMvcBuilders
-                .standaloneSetup()
-                .setControllerAdvice(new GenericControllerAdvice())
-                .build();
-
         given(employeeService.getEmployeeById(999))
                 .willThrow(new NotFoundException("Provided id does not exist"));
 
-       var response = this.mockMvc.perform(get("/api/employees/1")
-                       .accept(MediaType.APPLICATION_JSON))
-               .andExpect(status().isNotFound())
-               .andReturn().getResponse();
-
-        // then
-        assertThat(response.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
-        assertThat(response.getContentAsString()).isEmpty();
+        this.mockMvc.perform(get("/api/employees/999")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.errors[0].message").value("Provided id does not exist"));
     }
 
     @Test
     public void createEmployeeWhenFirstnameIsNullShouldReturnBadRequest() throws Exception {
-        var expected = anEmployeeCreateRequest()
+        var request = anEmployeeCreateRequest()
                 .withFirstname(null)
                 .build();
 
-        given(employeeService.createEmployee(expected))
+        given(employeeService.createEmployee(any(EmployeeCreateRequest.class)))
                 .willThrow(new InvalidFieldException("Firstname cannot be null or empty"));
 
-       var response = this.mockMvc.perform(post("/api/employees", expected).accept(MediaType.APPLICATION_JSON))
+        this.mockMvc.perform(post("/api/employees")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andReturn().getResponse();
-
-        // then
-        assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-        assertThat(response.getContentAsString()).isEmpty();
+                .andExpect(jsonPath("$.errors[0].message").value("Firstname cannot be null or empty"));
     }
 
     @Test
@@ -125,22 +117,24 @@ public class EmployeeControllerTest {
                 .andExpect(status().isOk());
     }
 
-//    @Test
-//    public void createEmployeeShouldReturnSuccess() throws Exception {
-//        var request = anEmployeeCreateRequest().build();
-//        var expected = anEmployee().build();
-//
-//        given(employeeService.createEmployee(request))
-//                .willReturn(new EmployeeModel(expected));
-//
-//        var response = this.mockMvc.perform(post("/api/employees", request).accept(MediaType.APPLICATION_JSON))
-//                .andDo(print())
-//                .andExpect(status().isCreated())
-//                .andReturn().getResponse();
-//
-//        // then
-//        assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-//        assertThat(response.getContentAsString()).isEmpty();
-//    }
+    @Test
+    public void createEmployeeShouldReturnSuccess() throws Exception {
+        var request = anEmployeeCreateRequest().build();
+        var expected = anEmployee().build();
+
+        given(employeeService.createEmployee(any(EmployeeCreateRequest.class)))
+                .willReturn(new EmployeeModel(expected));
+
+        var response = this.mockMvc.perform(post("/api/employees")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isCreated())
+                .andReturn().getResponse();
+
+        assertThat(response.getContentAsString()).isEqualToIgnoringWhitespace(
+                objectMapper.writeValueAsString(expected));
+    }
 
 }

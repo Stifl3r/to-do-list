@@ -145,10 +145,11 @@ public class QuartzSchedulerService {
         var sortDirection = paging.getSortOrder() == null || paging.getSortOrder().getDirection() == Sort.Direction.ASC ?
                 Sort.Direction.ASC :
                 Sort.Direction.DESC;
-        var pageRequest = PageRequest.of(paging.getPageIndex(), paging.getPageSize(), paging.getSort(Sort.by(sortDirection, "fireTime")));
+        var pageIndex = Objects.requireNonNullElse(paging.getPageIndex(), 0);
+        var pageSize = Objects.requireNonNullElse(paging.getPageSize(), 10);
+        var pageRequest = PageRequest.of(pageIndex, pageSize, paging.getSort(Sort.by(sortDirection, "fireTime")));
         var historyList = qrtzJobHistoryRepository.findByFilter(pageRequest, jobId);
 
-        log.info("we are here");
         return historyList.map(QuartzJobHistoryResponse::mapToResponse);
     }
 

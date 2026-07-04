@@ -1,14 +1,13 @@
 package za.co.learnings.todolist.api.service;
 
-import org.junit.Ignore;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import za.co.learnings.todolist.api.controller.model.TaskModel;
 import za.co.learnings.todolist.api.exception.InvalidFieldException;
 import za.co.learnings.todolist.api.exception.NotFoundException;
@@ -42,7 +41,7 @@ import static za.co.learnings.todolist.api.testmodel.TaskBuilder.aTask;
 import static za.co.learnings.todolist.api.testmodel.TaskCreateRequestBuilder.aTaskCreateRequest;
 import static za.co.learnings.todolist.api.testmodel.TaskEditRequestBuilder.aTaskEditRequest;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = TaskService.class)
 @ActiveProfiles("local")
 public class TaskServiceTest {
@@ -50,13 +49,13 @@ public class TaskServiceTest {
     @Autowired
     private TaskService taskService;
 
-    @MockBean
+    @MockitoBean
     private TaskRepository taskRepository;
 
-    @MockBean
+    @MockitoBean
     private EmployeeRepository employeeRepository;
 
-    @MockBean
+    @MockitoBean
     private JsReportClient jsReportClient;
 
     @Test
@@ -398,6 +397,24 @@ public class TaskServiceTest {
         assertThat(thrown).isInstanceOf(InvalidFieldException.class);
         Assertions.assertEquals("Name cannot be null or empty", thrown.getMessage());
 
+    }
+
+    @Test
+    public void editTaskWhenStatusIsNullShouldReturnInvalidField() {
+        //Given
+        var request = aTaskEditRequest()
+                .withStatus(null)
+                .build();
+        var task = aTask().build();
+        given(taskRepository.findById(task.getTaskId()))
+                .willReturn(Optional.of(task));
+
+        //When
+        var thrown = catchThrowable(() -> taskService.editTask(task.getTaskId(), request));
+
+        //Then
+        assertThat(thrown).isInstanceOf(InvalidFieldException.class);
+        Assertions.assertEquals("Status cannot be null", thrown.getMessage());
     }
 
     @Test

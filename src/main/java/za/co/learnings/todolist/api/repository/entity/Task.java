@@ -3,7 +3,7 @@ package za.co.learnings.todolist.api.repository.entity;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
@@ -21,7 +21,7 @@ public class Task {
     private LocalDateTime statusUpdate;
 
     @ManyToOne
-    @JoinColumn(name = "assignee", insertable = true, updatable = false)
+    @JoinColumn(name = "assignee", insertable = true, updatable = true)
     private Employee assignee;
 
     @ManyToOne

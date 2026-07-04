@@ -2,9 +2,9 @@ package za.co.learnings.todolist.api.job;
 
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityTransaction;
-import javax.persistence.TransactionRequiredException;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.TransactionRequiredException;
 
 @Service
 public class QuartzPersistence {
