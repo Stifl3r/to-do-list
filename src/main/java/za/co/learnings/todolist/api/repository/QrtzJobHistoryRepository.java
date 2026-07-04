@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import za.co.learnings.todolist.api.repository.entity.QuartzJobHistory;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 
 @Transactional
 public interface QrtzJobHistoryRepository extends JpaRepository<QuartzJobHistory, Integer> {

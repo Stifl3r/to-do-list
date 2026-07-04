@@ -3,11 +3,9 @@ package za.co.learnings.todolist.api.job;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
+// ...existing code...
 import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -15,7 +13,7 @@ import za.co.learnings.todolist.api.exception.FailedDependencyException;
 
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpStatus.OK;
-import static org.springframework.web.util.UriComponentsBuilder.fromHttpUrl;
+import java.net.URI;
 
 @Component
 @Slf4j
@@ -35,10 +33,9 @@ public class OverdueTasksJob extends QuartzJobBean {
             var headers = new HttpHeaders();
             var baseUrl = "http://localhost:8081/batch";
 
-            var builder = fromHttpUrl(baseUrl + "/overdueTasksTrigger");
+            var uri = URI.create(baseUrl + "/overdueTasksTrigger");
             var request = new HttpEntity<>(headers);
-            var res = restTemplate.exchange(
-                    builder.build().toUri(), POST, request, Object.class);
+            var res = restTemplate.exchange(uri, POST, request, Object.class);
 
             if (res.getStatusCode() != OK) {
                 throw new FailedDependencyException("Down stream services failed");

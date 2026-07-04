@@ -28,7 +28,7 @@ public class GenericControllerAdvice {
     })
     @ResponseBody
     @ResponseStatus(BAD_REQUEST)
-    private ApiErrorResponse validationErrors(Exception e) {
+    public ApiErrorResponse validationErrors(Exception e) {
         Throwable cause = e.getCause();
 
         var ipe = (GenericException) e;
@@ -43,7 +43,7 @@ public class GenericControllerAdvice {
     })
     @ResponseBody
     @ResponseStatus(NOT_FOUND)
-    private ApiErrorResponse handleNotFoundError(Exception e) {
+    public ApiErrorResponse handleNotFoundError(Exception e) {
         Throwable cause = e.getCause();
 
         var ipe = (GenericException) e;
@@ -58,7 +58,7 @@ public class GenericControllerAdvice {
     })
     @ResponseBody
     @ResponseStatus(FAILED_DEPENDENCY)
-    private ApiErrorResponse failedDependencyError(Exception e) {
+    public ApiErrorResponse failedDependencyError(Exception e) {
         Throwable cause = e.getCause();
 
         var ipe = (GenericException) e;

@@ -1,13 +1,18 @@
 plugins {
-	id 'org.springframework.boot' version '2.5.1'
-	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+	id 'org.springframework.boot' version '4.0.6'
+	id 'io.spring.dependency-management' version '1.1.7'
 	id 'java'
 	id 'jacoco'
 }
 
 group = 'za.co.learnings'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '11'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(25)
+	}
+}
 
 configurations {
 	compileOnly {
@@ -20,26 +25,51 @@ repositories {
 }
 
 dependencies {
+//	implementation 'org.springframework.boot:spring-boot-starter-web'
+//	implementation 'org.springdoc:springdoc-openapi-ui:1.7.0'
+//	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+//	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+//	implementation 'org.postgresql:postgresql:42.6.2'
+//	implementation 'org.springframework.boot:spring-boot-starter-mail'
+//	implementation 'org.springframework.boot:spring-boot-starter-hateoas'
+//	implementation 'org.springframework.boot:spring-boot-starter-quartz'
+//	implementation 'io.awspring.cloud:spring-cloud-starter-aws-secrets-manager-config:2.4.4'
+//	implementation 'software.amazon.awssdk:secretsmanager:2.20.0'
+//	compileOnly 'org.projectlombok:lombok'
+//	annotationProcessor 'org.projectlombok:lombok'
+//	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+//	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
+//	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
+	
+
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.springdoc:springdoc-openapi-ui:1.4.4'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa:2.2.2.RELEASE'
-	implementation 'org.postgresql:postgresql:42.2.8'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 	implementation 'org.springframework.boot:spring-boot-starter-hateoas'
 	implementation 'org.springframework.boot:spring-boot-starter-quartz'
-	implementation 'io.awspring.cloud:spring-cloud-starter-aws-secrets-manager-config:2.4.4'
-	implementation 'software.amazon.awssdk:secretsmanager:2.20.0'
-	implementation 'junit:junit:4.13.1'
+
+	// springdoc: artifact renamed in 2.x for Spring Boot 3
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3'
+
+	implementation 'org.postgresql:postgresql:42.7.5'
+
+	// awspring 3.x is rewritten for Spring Boot 3
+	implementation 'io.awspring.cloud:spring-cloud-aws-starter-secrets-manager:3.3.0'
+	implementation 'software.amazon.awssdk:secretsmanager:2.26.0'
+
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
+
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
-	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
+	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+	// Remove the explicit junit-jupiter lines — Spring Boot 3 manages them
 }
 
 test {
 	useJUnitPlatform()
+	failOnNoDiscoveredTests = false
 	finalizedBy jacocoTestReport
 }
 

@@ -13,7 +13,7 @@ import za.co.learnings.todolist.api.exception.InvalidFieldException;
 import za.co.learnings.todolist.api.exception.NotFoundException;
 import za.co.learnings.todolist.api.service.QuartzSchedulerService;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 import java.text.ParseException;
 import java.util.List;
 
@@ -23,7 +23,7 @@ import java.util.List;
         @ApiResponse(responseCode ="200", description = "OK"),
         @ApiResponse(responseCode ="500", description = "Internal server error")
 })
-@RequestMapping("/api/scheduler/jobs/{id}/triggers")
+@RequestMapping("/api/scheduler/jobs/{jobId}/triggers")
 @Slf4j
 @Transactional
 public class QuartzTriggerController {

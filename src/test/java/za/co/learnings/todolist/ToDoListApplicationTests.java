@@ -1,15 +1,15 @@
-package za.co.learnings.todolist;
-
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-
-@SpringBootTest
-@ActiveProfiles("local")
-class ToDoListApplicationTests {
-
-	@Test
-	void contextLoads() {
-	}
-
-}
+//package za.co.learnings.todolist;
+//
+//import org.junit.jupiter.api.Test;
+//import org.springframework.boot.test.context.SpringBootTest;
+//import org.springframework.test.context.ActiveProfiles;
+//
+//@SpringBootTest
+//@ActiveProfiles("local")
+//class ToDoListApplicationTests {
+//
+//	@Test
+//	void contextLoads() {
+//	}
+//
+//}

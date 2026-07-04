@@ -1,5 +1,7 @@
 package za.co.learnings.todolist.api.service;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.stereotype.Service;
 import za.co.learnings.todolist.api.controller.model.EmployeeModel;
 import za.co.learnings.todolist.api.controller.model.TaskModel;
@@ -11,8 +13,8 @@ import za.co.learnings.todolist.api.repository.EmployeeRepository;
 import za.co.learnings.todolist.api.repository.TaskRepository;
 import za.co.learnings.todolist.api.repository.entity.Employee;
 
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
+import jakarta.mail.internet.AddressException;
+import jakarta.mail.internet.InternetAddress;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
@@ -22,14 +24,20 @@ public class EmployeeService {
 
     private final EmployeeRepository employeeRepository;
     private final TaskRepository taskRepository;
+    private final Counter getAllEmployeesCounter;
 
     public EmployeeService(EmployeeRepository employeeRepository,
-                           TaskRepository taskRepository) {
+                           TaskRepository taskRepository,
+                           MeterRegistry meterRegistry) {
         this.employeeRepository = employeeRepository;
         this.taskRepository = taskRepository;
+        this.getAllEmployeesCounter = Counter.builder("employee.service.get_all_employees.calls")
+                .description("Number of times EmployeeService.getAllEmployees() has been called")
+                .register(meterRegistry);
     }
 
     public List<EmployeeModel> getAllEmployees() {
+        getAllEmployeesCounter.increment();
         var results = employeeRepository.findAll();
         return results.stream()
                 .map(EmployeeModel::new)

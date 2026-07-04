@@ -21,7 +21,7 @@ import za.co.learnings.todolist.api.exception.InvalidFieldException;
 import za.co.learnings.todolist.api.exception.NotFoundException;
 import za.co.learnings.todolist.api.service.QuartzSchedulerService;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 import java.text.ParseException;
 import java.util.List;
 

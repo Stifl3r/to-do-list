@@ -1,13 +1,19 @@
 package za.co.learnings.todolist.api.service;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+
 import za.co.learnings.todolist.api.controller.model.EmployeeModel;
 import za.co.learnings.todolist.api.controller.model.TaskModel;
 import za.co.learnings.todolist.api.exception.InvalidFieldException;
@@ -29,19 +35,27 @@ import static za.co.learnings.todolist.api.testmodel.EmployeeCreateRequestBuilde
 import static za.co.learnings.todolist.api.testmodel.EmployeeEditRequestBuilder.anEmployeeEditRequest;
 import static za.co.learnings.todolist.api.testmodel.TaskBuilder.aTask;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = EmployeeService.class)
+@ExtendWith(SpringExtension.class)
+@SpringBootTest(classes = {EmployeeService.class, EmployeeServiceTest.TestConfig.class})
 @ActiveProfiles("local")
 public class EmployeeServiceTest {
 
     @Autowired
     private EmployeeService employeeService;
 
-    @MockBean
+    @MockitoBean
     private EmployeeRepository employeeRepository;
 
-    @MockBean
+    @MockitoBean
     private TaskRepository taskRepository;
+
+    @TestConfiguration
+    static class TestConfig {
+        @Bean
+        MeterRegistry meterRegistry() {
+            return new SimpleMeterRegistry();
+        }
+    }
 
     @Test
     public void getAllEmployeesShouldReturnListOfEmployees() {

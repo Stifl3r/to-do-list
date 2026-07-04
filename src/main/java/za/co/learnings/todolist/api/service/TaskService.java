@@ -100,6 +100,10 @@ public class TaskService {
             throw new InvalidFieldException("Name cannot be null or empty");
         }
 
+        if (request.getStatus() == null) {
+            throw new InvalidFieldException("Status cannot be null");
+        }
+
         Employee assignee;
         if (request.getAssigneeId() != null) {
             assignee = employeeRepository.findById(request.getAssigneeId())
