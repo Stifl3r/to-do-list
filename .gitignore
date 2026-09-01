@@ -25,6 +25,7 @@
 /classes
 /out
 .idea/
+.vscode/
 /src/main/resources/application-local.yaml
 HELP.md
 .gradle
