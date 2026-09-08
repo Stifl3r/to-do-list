@@ -3,6 +3,8 @@ kind: Kustomization
 
 resources:
   - app-config.yaml
+  - observability-prometheus.yaml
+  - observability-grafana.yaml
 
 secretGenerator:
   - name: db-credentials

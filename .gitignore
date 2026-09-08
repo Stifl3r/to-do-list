@@ -26,6 +26,7 @@
 /out
 .idea/
 .vscode/
+.tmp/
 /src/main/resources/application-local.yaml
 HELP.md
 .gradle

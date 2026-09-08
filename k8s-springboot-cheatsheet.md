@@ -152,6 +152,11 @@ kubectl kustomize k8s/
 # Verify generated Secret name
 kubectl get secret | grep db-credentials
 
+# Verify observability pods and services
+kubectl get pods -l app=prometheus
+kubectl get pods -l app=grafana
+kubectl get svc prometheus-service grafana-service
+
 # Track target engine container rollout loops
 kubectl get pods -w
 
@@ -161,6 +166,28 @@ kubectl logs deployment/springboot-deployment --previous --tail=50
 # Track active logs in real-time execution mode
 kubectl logs -l app=springboot-api --tail=50 -f
 ```
+
+### Observability Dashboards (Prometheus + Grafana)
+```bash
+# Verify Spring Prometheus endpoint is exposed
+kubectl port-forward svc/springboot-service 9001:9001
+curl -s http://localhost:9001/actuator/prometheus | head
+
+# Open Prometheus UI
+kubectl port-forward svc/prometheus-service 9090:9090
+# then browse http://localhost:9090
+
+# Open Grafana UI
+kubectl port-forward svc/grafana-service 3000:3000
+# then browse http://localhost:3000
+```
+
+Grafana login defaults (local only):
+- user: `admin`
+- password: `admin`
+
+Dashboard is auto-provisioned:
+- `Spring Boot Overview`
 
 ### Direct Network Expose Interface (Port Forwarding)
 ```bash
