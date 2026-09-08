@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springboot-deployment
+  labels:
+    app: springboot-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: springboot-api
+  template:
+    metadata:
+      labels:
+        app: springboot-api
+    spec:
+      containers:
+        - name: springboot-container
+          image: springboot-api:java25
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "local"
+            # ⬇️ DIRECT SPRING BOOT DRIVER INJECTIONS ⬇️
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://172.23.0.1:55432/c4h_local?currentSchema=to_do_list"
+            - name: AWS_REGION
+              value: "us-east-1"
+            - name: AWS_DEFAULT_REGION
+              value: "us-east-1"
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: DB_USERNAME
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: DB_PASSWORD
+            - name: SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT
+              value: "org.hibernate.dialect.PostgreSQLDialect"
+            - name: SPRING_JPA_DATABASE_PLATFORM
+              value: "org.hibernate.dialect.PostgreSQLDialect"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: springboot-service
+spec:
+  selector:
+    app: springboot-api
+  ports:
+    - protocol: TCP
+      port: 9001
+      targetPort: 8080
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: local-db-service
+spec:
+  ports:
+    - port: 55432 # Change to 3306 for MySQL, 27017 for Mongo, etc.
+      targetPort: 55432
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: local-db-service
+subsets:
+  - addresses:
+      - ip: 172.18.0.2 # <--- UPDATE WITH YOUR DOCKER DATABASE CONTAINER IP
+    ports:
+      - port: 55432 # Match your target database port

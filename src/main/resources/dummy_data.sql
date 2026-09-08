@@ -1,4 +1,15 @@
+SET search_path TO to_do_list, public;
+
+INSERT INTO employee (employeeId, firstname, lastname, email, department) VALUES
+                                                                              (1, 'Alice', 'Johnson', 'alice.johnson@company.com', 'FrontEnd'),
+                                                                              (2, 'Bob', 'Smith', 'bob.smith@company.com', 'BackEnd'),
+                                                                              (3, 'Charlie', 'Brown', 'charlie.brown@company.com', 'IaC'),
+                                                                              (4, 'Diana', 'Williams', 'diana.williams@company.com', 'FrontEnd'),
+                                                                              (5, 'Eve', 'Davis', 'eve.davis@company.com', 'BackEnd');
+
 -- Seed ~200 tasks using existing employees (IDs 1..5)
+
+
 SET search_path TO to_do_list, public;
 
 WITH seed AS (
