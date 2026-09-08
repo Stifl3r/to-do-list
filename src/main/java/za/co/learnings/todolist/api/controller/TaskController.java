@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import za.co.learnings.todolist.api.controller.model.TaskModel;
@@ -86,6 +87,21 @@ public class TaskController {
         return ResponseEntity
                 .ok()
                 .headers(headers)
+                .body(new InputStreamResource(result));
+    }
+
+    @Operation(description = "Export a list of over due tasks to pdf")
+    @GetMapping("/export/pdf")
+    public ResponseEntity<InputStreamResource> getOverDueTasksPDF() {
+        var result = taskService.getTasksForPdfReport();
+        var headers = new HttpHeaders();
+        headers.setContentDispositionFormData("attachment", "OverdueTasks.pdf");
+        headers.setAccessControlExposeHeaders(List.of(CONTENT_DISPOSITION));
+
+        return ResponseEntity
+                .ok()
+                .headers(headers)
+                .contentType(MediaType.APPLICATION_PDF)
                 .body(new InputStreamResource(result));
     }
 }

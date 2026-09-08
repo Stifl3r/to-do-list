@@ -25,10 +25,13 @@
 /classes
 /out
 .idea/
+.vscode/
 /src/main/resources/application-local.yaml
 HELP.md
 .gradle
 build/
+.env.secret
+k8s/.env.secret
 
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
