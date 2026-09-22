@@ -24,6 +24,12 @@ PROMETHEUS_SERVICE_NAME="${PROMETHEUS_SERVICE_NAME:-prometheus-service}"
 PROMETHEUS_LOCAL_PORT="${PROMETHEUS_LOCAL_PORT:-9090}"
 PROMETHEUS_SERVICE_PORT="${PROMETHEUS_SERVICE_PORT:-9090}"
 
+# Pods reach the DB published on the docker host via the kind network gateway.
+# DB_HOST_IP overrides auto-detection.
+DB_SERVICE_NAME="${DB_SERVICE_NAME:-local-db-service}"
+DB_HOST_PORT="${DB_HOST_PORT:-55432}"
+DB_HOST_IP="${DB_HOST_IP:-}"
+
 PID_DIR="${ROOT_DIR}/.tmp"
 PID_FILE="${PID_DIR}/k8s-port-forward.pid"
 LOG_FILE="${PID_DIR}/k8s-port-forward.log"
@@ -71,6 +77,47 @@ cleanup_pf() {
     done < "${PIDS_FILE}"
     rm -f "${PIDS_FILE}"
   fi
+}
+
+resolve_db_host_ip() {
+  if [[ -n "${DB_HOST_IP}" ]]; then
+    return 0
+  fi
+  DB_HOST_IP="$(docker network inspect kind -f '{{range .IPAM.Config}}{{.Gateway}} {{end}}' \
+    | tr ' ' '\n' | grep -E '^[0-9]+(\.[0-9]+){3}$' | head -n1 || true)"
+  if [[ -z "${DB_HOST_IP}" ]]; then
+    echo "ERROR: Could not detect IPv4 gateway of docker network 'kind'. Set DB_HOST_IP explicitly."
+    exit 1
+  fi
+}
+
+apply_db_endpoint() {
+  resolve_db_host_ip
+  echo "==> Pointing ${DB_SERVICE_NAME} at docker host ${DB_HOST_IP}:${DB_HOST_PORT}"
+  local manifest
+  manifest="$(cat <<EOF
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: ${DB_SERVICE_NAME}-host
+  labels:
+    kubernetes.io/service-name: ${DB_SERVICE_NAME}
+addressType: IPv4
+ports:
+  - port: ${DB_HOST_PORT}
+    protocol: TCP
+endpoints:
+  - addresses:
+      - ${DB_HOST_IP}
+EOF
+)"
+  if [[ "${DRY_RUN}" == "true" ]]; then
+    echo "[dry-run] kubectl -n ${NAMESPACE} apply -f - <<< (EndpointSlice ${DB_SERVICE_NAME}-host -> ${DB_HOST_IP}:${DB_HOST_PORT})"
+    return 0
+  fi
+  kubectl -n "${NAMESPACE}" apply -f - <<< "${manifest}"
+  # A legacy hand-written Endpoints object would be mirrored as an extra (stale) backend.
+  kubectl -n "${NAMESPACE}" delete endpoints "${DB_SERVICE_NAME}" --ignore-not-found
 }
 
 echo "==> Validating required tools"
@@ -125,6 +172,10 @@ elif [[ "${START_MODE}" == "observability" ]]; then
 else
   echo "==> Applying full Kubernetes stack via kustomize"
   run_cmd kubectl -n "${NAMESPACE}" apply -k k8s/
+fi
+
+if [[ "${START_MODE}" == "app" || "${START_MODE}" == "full" ]]; then
+  apply_db_endpoint
 fi
 
 if [[ "${START_MODE}" == "app" || "${START_MODE}" == "full" ]]; then

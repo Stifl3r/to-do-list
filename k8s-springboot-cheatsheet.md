@@ -53,7 +53,7 @@ spec:
         - name: SPRING_PROFILES_ACTIVE
           value: "local"
         - name: SPRING_DATASOURCE_URL
-          value: "jdbc:postgresql://172.23.0.1:55432/c4h_local?currentSchema=to_do_list"
+          value: "jdbc:postgresql://local-db-service:55432/c4h_local?currentSchema=to_do_list"
         - name: AWS_REGION
           value: "us-east-1"
         - name: AWS_DEFAULT_REGION

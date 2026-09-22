@@ -25,7 +25,7 @@ spec:
               value: "local"
             # ⬇️ DIRECT SPRING BOOT DRIVER INJECTIONS ⬇️
             - name: SPRING_DATASOURCE_URL
-              value: "jdbc:postgresql://172.23.0.1:55432/c4h_local?currentSchema=to_do_list"
+              value: "jdbc:postgresql://local-db-service:55432/c4h_local?currentSchema=to_do_list"
             - name: AWS_REGION
               value: "us-east-1"
             - name: AWS_DEFAULT_REGION
@@ -62,17 +62,9 @@ apiVersion: v1
 kind: Service
 metadata:
   name: local-db-service
+# No selector: backed by an EndpointSlice created by scripts/start-k8s.sh that
+# points at the docker host (kind network gateway), where the DB port is published.
 spec:
   ports:
     - port: 55432 # Change to 3306 for MySQL, 27017 for Mongo, etc.
       targetPort: 55432
----
-apiVersion: v1
-kind: Endpoints
-metadata:
-  name: local-db-service
-subsets:
-  - addresses:
-      - ip: 172.18.0.2 # <--- UPDATE WITH YOUR DOCKER DATABASE CONTAINER IP
-    ports:
-      - port: 55432 # Match your target database port
