@@ -45,5 +45,11 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     restart: "no"
 
+  jsreport:
+    image: jsreport/jsreport:4.13.0-full
+    ports:
+      - "5488:5488"
+    restart: unless-stopped
+
 volumes:
   db-data:

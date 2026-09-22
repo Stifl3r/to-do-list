@@ -149,4 +149,28 @@ public class TaskService {
         var bos = (ByteArrayOutputStream) result;
         return new ByteArrayInputStream(bos.toByteArray());
     }
+
+    public ByteArrayInputStream getTasksForPdfReport() {
+        var tasks = getAllTasks(true);
+        var list = tasks.stream()
+                .map(taskModel -> {
+                    List<String> cols = new ArrayList<>();
+                    cols.add(taskModel.getName());
+                    cols.add(taskModel.getDescription());
+                    cols.add(taskModel.getStatus());
+                    cols.add(taskModel.getDeadline().toString());
+                    cols.add(taskModel.getAssignee() == null ?
+                            null : taskModel.getAssignee().getLastname() + " " + taskModel.getAssignee().getFirstname());
+
+                    return cols;
+                }).collect(toList());
+
+        var data = new JsReportBaseData();
+        data.setRows(list);
+        data.setDataHeadings(List.of("Name", "Description", "Status", "Due Date", "Assignee"));
+        var jsRequest = jsReportClient.createPDFRequest(data);
+        var result = jsReportClient.sendAndWriteToBuffer(jsRequest);
+        var bos = (ByteArrayOutputStream) result;
+        return new ByteArrayInputStream(bos.toByteArray());
+    }
 }

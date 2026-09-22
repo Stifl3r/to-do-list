@@ -83,9 +83,8 @@ public class QuartzSchedulerService {
         var jobs = new ArrayList<QuartzJobDetailResponse>();
 
         for (String groupName : scheduler.getJobGroupNames()) {
-
-            var jobDetail = new QuartzJobDetailResponse();
             for (JobKey jobKey : scheduler.getJobKeys(GroupMatcher.jobGroupEquals(groupName))) {
+                var jobDetail = new QuartzJobDetailResponse();
                 var jobGroup = jobKey.getGroup();
                 var existingJobDetail = scheduler.getJobDetail(jobKey);
                 List<Trigger> triggers = (List<Trigger>) scheduler.getTriggersOfJob(jobKey);
@@ -107,15 +106,13 @@ public class QuartzSchedulerService {
         if (existingJob.size() == 0) {
             throw new NotFoundException("Specified Job Id does not exist");
         }
-        var job =  scheduler.getJobDetail(existingJob.iterator().next());
-
-        var jobDetail = scheduler.getJobDetail(job.getKey());
+        var jobDetail = scheduler.getJobDetail(existingJob.iterator().next());
         if (jobDetail == null) {
             throw new NotFoundException("Specified Job Id does not exist");
         }
         var quartzJobDetail = new QuartzJobDetailResponse();
         BeanUtils.copyProperties(jobDetail, quartzJobDetail);
-        var triggers = scheduler.getTriggersOfJob(job.getKey());
+        var triggers = scheduler.getTriggersOfJob(jobDetail.getKey());
         if (!triggers.isEmpty()) {
             List<QuartzTriggerResponse> quartzTriggerResponses = new ArrayList<>();
             for (Trigger trigger : triggers) {
@@ -196,18 +193,19 @@ public class QuartzSchedulerService {
         if (existingTrigger == null) {
             throw new NotFoundException("Specified trigger does not exist");
         }
+        if (!(existingTrigger instanceof CronTriggerImpl newTrigger)) {
+            throw new InvalidFieldException("Only cron triggers can be edited", -1);
+        }
         if(!isValidExpression(request.getCronExpression())) {
             throw new InvalidFieldException("Incorrect Cron Expression has been provided", -1);
         }
 
-        var newTrigger = new CronTriggerImpl();
-        newTrigger = (CronTriggerImpl) existingTrigger;
-
+        var previousCronExpression = newTrigger.getCronExpression();
         newTrigger.setCronExpression(request.getCronExpression());
         newTrigger.setDescription(request.getDescription());
 
         var result = scheduler.rescheduleJob(existingTrigger.getKey(), newTrigger);
-        log.info(existingTrigger.getDescription() + " with cron " + ((CronTriggerImpl) existingTrigger).getCronExpression() + " is rescheduled with next fire time of: " + result);
+        log.info(existingTrigger.getDescription() + " with cron " + previousCronExpression + " is rescheduled to " + newTrigger.getCronExpression() + " with next fire time of: " + result);
     }
 
     private Trigger getTrigger(TriggerRequest request, JobDetail jobDetail) throws InvalidFieldException {
@@ -322,6 +320,6 @@ public class QuartzSchedulerService {
         var result = existingTrigger instanceof CronTriggerImpl ?
                 " with cron " + ((CronTriggerImpl) existingTrigger).getCronExpression() :
                 " with simple " + existingTrigger.getStartTime();
-        log.info(existingTrigger.getDescription() + result + " has been resumed");
+        log.info(existingTrigger.getDescription() + result + " has been deleted");
     }
 }

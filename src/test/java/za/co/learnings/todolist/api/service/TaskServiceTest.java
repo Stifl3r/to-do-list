@@ -3,6 +3,7 @@ package za.co.learnings.todolist.api.service;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -33,7 +34,9 @@ import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 import static za.co.learnings.todolist.api.controller.model.StatusType.BACK_LOG;
 import static za.co.learnings.todolist.api.controller.model.StatusType.TESTING;
 import static za.co.learnings.todolist.api.testmodel.EmployeeBuilder.anEmployee;
@@ -507,45 +510,64 @@ public class TaskServiceTest {
                 .isEqualTo(expected);
     }
 
-//    @Test
-//    public void getTasksForReportShouldReturnSuccess() {
-//        var task = aTask().build();
-//        var tasks = List.of(task);
-//
-//        var list = tasks.stream()
-//                .map(taskModel -> {
-//                    List<String> cols = new ArrayList<>();
-//                    cols.add(taskModel.getName());
-//                    cols.add(taskModel.getDescription());
-//                    cols.add(taskModel.getStatus());
-//                    cols.add(taskModel.getDeadline().toString());
-//                    cols.add(taskModel.getAssignee() == null ?
-//                            null : taskModel.getAssignee().getLastname() + " " + taskModel.getAssignee().getFirstname());
-//
-//                    return cols;
-//                }).collect(toList());
-//
-//        list.add(List.of("NUMBEROFROWS:" + (list.size() + 2)));
-//
-//        var data = new JsReportBaseData();
-//        data.setRows(list);
-//        data.setDataHeadings(List.of("Name", "Description", "Status", "Due Date", "Assignee"));
-//
-//        given(taskRepository.findTasksByFilter(now()))
-//                .willReturn(Collections.emptyList());
-//
-//        var csvRequest = new JsReportRequest<JsReportBaseData>();
-//        given(jsReportClient.createCSVRequest(data))
-//                .willReturn(csvRequest);
-//
-//        var outputStream = new ByteArrayOutputStream();
-//        outputStream.write(1);
-//        given(jsReportClient.sendAndWriteToBuffer(csvRequest))
-//                .willReturn(outputStream);
-//
-//
-//        //When
-//        var actual = taskService.getTasksForReport();
-//    }
+    @Test
+    public void getTasksForReportShouldSendOverdueTasksAsCsvRows() {
+        //Given
+        var assigned = aTask().withName("assigned").build();
+        var unassigned = aTask().withName("unassigned").withAssignee(null).build();
+        given(taskRepository.findTasksByFilter(any(LocalDateTime.class)))
+                .willReturn(List.of(assigned, unassigned));
+
+        var csvRequest = new JsReportRequest<JsReportBaseData>();
+        given(jsReportClient.createCSVRequest(any(JsReportBaseData.class)))
+                .willReturn(csvRequest);
+        var outputStream = new ByteArrayOutputStream();
+        outputStream.writeBytes("csv".getBytes());
+        given(jsReportClient.sendAndWriteToBuffer(csvRequest))
+                .willReturn(outputStream);
+
+        //When
+        var actual = taskService.getTasksForReport();
+
+        //Then
+        assertThat(actual.readAllBytes()).isEqualTo("csv".getBytes());
+        var dataCaptor = ArgumentCaptor.forClass(JsReportBaseData.class);
+        verify(jsReportClient).createCSVRequest(dataCaptor.capture());
+        var data = dataCaptor.getValue();
+        assertEquals(of("Name", "Description", "Status", "Due Date", "Assignee"), data.getDataHeadings());
+        assertEquals(3, data.getRows().size());
+        assertEquals("assigned", data.getRows().get(0).get(0));
+        assertEquals("Smith John", data.getRows().get(0).get(4));
+        assertThat(data.getRows().get(1).get(4)).isNull();
+        assertEquals(of("NUMBEROFROWS:4"), data.getRows().get(2));
+    }
+
+    @Test
+    public void getTasksForPdfReportShouldSendOverdueTasksAsPdfRows() {
+        //Given
+        var task = aTask().build();
+        given(taskRepository.findTasksByFilter(any(LocalDateTime.class)))
+                .willReturn(List.of(task));
+
+        var pdfRequest = new JsReportRequest<JsReportBaseData>();
+        given(jsReportClient.createPDFRequest(any(JsReportBaseData.class)))
+                .willReturn(pdfRequest);
+        var outputStream = new ByteArrayOutputStream();
+        outputStream.writeBytes("%PDF".getBytes());
+        given(jsReportClient.sendAndWriteToBuffer(pdfRequest))
+                .willReturn(outputStream);
+
+        //When
+        var actual = taskService.getTasksForPdfReport();
+
+        //Then
+        assertThat(actual.readAllBytes()).isEqualTo("%PDF".getBytes());
+        var dataCaptor = ArgumentCaptor.forClass(JsReportBaseData.class);
+        verify(jsReportClient).createPDFRequest(dataCaptor.capture());
+        var rows = dataCaptor.getValue().getRows();
+        assertEquals(1, rows.size());
+        assertEquals(of(task.getName(), task.getDescription(), task.getStatus(),
+                task.getDeadline().toString(), "Smith John"), rows.get(0));
+    }
 
 }

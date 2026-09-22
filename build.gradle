@@ -44,6 +44,7 @@ dependencies {
 
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'io.micrometer:micrometer-registry-prometheus'
 	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
@@ -76,3 +77,22 @@ test {
 jacocoTestReport {
 	dependsOn test
 }
+
+// Fails `check`/`build` if coverage drops below the floor. Keep a few points under the current level.
+jacocoTestCoverageVerification {
+	dependsOn test
+	violationRules {
+		rule {
+			limit {
+				counter = 'LINE'
+				minimum = 0.90
+			}
+			limit {
+				counter = 'BRANCH'
+				minimum = 0.85
+			}
+		}
+	}
+}
+
+check.dependsOn jacocoTestCoverageVerification
