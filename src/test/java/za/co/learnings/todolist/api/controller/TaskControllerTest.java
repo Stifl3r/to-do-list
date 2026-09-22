@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -15,6 +16,7 @@ import za.co.learnings.todolist.api.service.TaskService;
 import za.co.learnings.todolist.api.testmodel.TaskBuilder;
 import za.co.learnings.todolist.api.testmodel.TaskCreateRequestBuilder;
 
+import java.io.ByteArrayInputStream;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -23,6 +25,8 @@ import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static za.co.learnings.todolist.api.testmodel.TaskBuilder.aTask;
 import static za.co.learnings.todolist.api.testmodel.TaskCreateRequestBuilder.aTaskCreateRequest;
@@ -88,5 +92,36 @@ public class TaskControllerTest {
 
         assertThat(response.getContentAsString()).isEqualToIgnoringWhitespace(
                 objectMapper.writeValueAsString(new TaskModel(expected)));
+    }
+
+    @Test
+    public void exportOverdueTasksPdfShouldReturnPdfAttachment() throws Exception {
+        var pdfBytes = "%PDF-1.4 test".getBytes();
+
+        given(taskService.getTasksForPdfReport())
+                .willReturn(new ByteArrayInputStream(pdfBytes));
+
+        this.mockMvc.perform(get("/api/tasks/export/pdf"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_PDF))
+                .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"OverdueTasks.pdf\""))
+                .andExpect(content().bytes(pdfBytes));
+    }
+
+    @Test
+    public void exportOverdueTasksCsvShouldReturnCsvAttachment() throws Exception {
+        var csvBytes = "Name,Deadline\n".getBytes();
+
+        given(taskService.getTasksForReport())
+                .willReturn(new ByteArrayInputStream(csvBytes));
+
+        this.mockMvc.perform(get("/api/tasks/export/csv"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"OverdueTasks.csv\""))
+                .andExpect(content().bytes(csvBytes));
     }
 }

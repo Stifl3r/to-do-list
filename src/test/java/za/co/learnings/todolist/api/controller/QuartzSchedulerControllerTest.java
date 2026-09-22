@@ -3,6 +3,7 @@ package za.co.learnings.todolist.api.controller;
 import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.quartz.JobKey;
+import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -11,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import za.co.learnings.todolist.api.controller.model.response.QuartzInformationResponse;
 import za.co.learnings.todolist.api.controller.model.response.QuartzJobDetailResponse;
 import za.co.learnings.todolist.api.controller.model.response.QuartzJobHistoryResponse;
 import za.co.learnings.todolist.api.controller.model.request.TriggerRequest;
@@ -187,5 +189,52 @@ public class QuartzSchedulerControllerTest {
                 .andDo(print())
                 .andExpect(status().isAccepted())
                 .andExpect(jsonPath("$.group").value("TestFibonacciJob"));
+    }
+
+    @Test
+    public void getSchedulerInformationShouldReturnOk() throws Exception {
+        var information = new QuartzInformationResponse();
+        information.setSchedulerName("quartzScheduler");
+
+        given(quartzSchedulerService.getSchedulerInformation())
+                .willReturn(information);
+
+        this.mockMvc.perform(get("/api/scheduler/information"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.schedulerName").value("quartzScheduler"))
+                .andExpect(jsonPath("$.schedulerProductName").value("Quartz Scheduler (spring-boot-starter-quartz)"));
+    }
+
+    @Test
+    public void getSchedulerInformationWhenSchedulerFailsShouldReturnBadRequest() throws Exception {
+        given(quartzSchedulerService.getSchedulerInformation())
+                .willThrow(new SchedulerException("scheduler down"));
+
+        this.mockMvc.perform(get("/api/scheduler/information"))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void getJobKeysWhenSchedulerFailsShouldReturnBadRequest() throws Exception {
+        given(quartzSchedulerService.getJobKeys())
+                .willThrow(new SchedulerException("scheduler down"));
+
+        this.mockMvc.perform(get("/api/scheduler/jobKeys"))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void deleteJobWhenSchedulerFailsShouldReturnBadRequest() throws Exception {
+        given(quartzSchedulerService.deleteJobDetail("job-1", "TestFibonacciJob"))
+                .willThrow(new SchedulerException("scheduler down"));
+
+        this.mockMvc.perform(delete("/api/scheduler/deleteJob")
+                        .param("name", "job-1")
+                        .param("group", "TestFibonacciJob"))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
     }
 }

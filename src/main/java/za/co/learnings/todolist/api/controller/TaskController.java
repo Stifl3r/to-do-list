@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -81,7 +82,7 @@ public class TaskController {
     public ResponseEntity<InputStreamResource> getOverDueTasksCSV() {
         var result = taskService.getTasksForReport();
         var headers = new HttpHeaders();
-        headers.setContentDispositionFormData("attachment", "OverdueTasks.csv");
+        headers.setContentDisposition(ContentDisposition.attachment().filename("OverdueTasks.csv").build());
         headers.setAccessControlExposeHeaders(List.of(CONTENT_DISPOSITION));
 
         return ResponseEntity
@@ -95,7 +96,7 @@ public class TaskController {
     public ResponseEntity<InputStreamResource> getOverDueTasksPDF() {
         var result = taskService.getTasksForPdfReport();
         var headers = new HttpHeaders();
-        headers.setContentDispositionFormData("attachment", "OverdueTasks.pdf");
+        headers.setContentDisposition(ContentDisposition.attachment().filename("OverdueTasks.pdf").build());
         headers.setAccessControlExposeHeaders(List.of(CONTENT_DISPOSITION));
 
         return ResponseEntity

@@ -34,8 +34,9 @@ public class QuartzPersistence {
                 }
                 throw e;
             }
+        } finally {
+            em.close();
         }
-        em.close();
         return entity;
     }
 }
